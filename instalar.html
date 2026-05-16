@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Instalar Constructor de Riqueza</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1D9E75">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --verde:#1D9E75;--verde-claro:#E1F5EE;--verde-oscuro:#0F6E56;
+  --gris-bg:#F7F6F3;--gris-card:#fff;--gris-borde:#E2E0D8;
+  --texto:#1A1A18;--texto2:#5F5E5A;--texto3:#888780;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--gris-bg);color:var(--texto);min-height:100vh;}
+
+.hero{background:linear-gradient(135deg,#0F6E56 0%,#1D9E75 60%,#378ADD 100%);padding:3rem 1.5rem 2.5rem;text-align:center;color:#fff;}
+.hero-logo{width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 1.25rem;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.15);}
+.hero h1{font-size:26px;font-weight:700;margin-bottom:8px;}
+.hero p{font-size:15px;opacity:.85;line-height:1.6;max-width:400px;margin:0 auto 1.5rem;}
+.hero-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.hero-badge{display:flex;align-items:center;gap:5px;padding:6px 14px;background:rgba(255,255,255,0.15);border-radius:20px;font-size:12px;font-weight:500;}
+
+.contenido{max-width:480px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+
+/* CARD PRINCIPAL */
+.install-card{background:#fff;border-radius:20px;padding:2rem 1.5rem;box-shadow:0 4px 24px rgba(0,0,0,0.10);margin-bottom:1.25rem;text-align:center;}
+.install-card h2{font-size:20px;font-weight:700;margin-bottom:8px;}
+.install-card p{font-size:14px;color:var(--texto2);line-height:1.6;margin-bottom:1.5rem;}
+
+/* BOTON INSTALAR GRANDE */
+.btn-instalar-grande{width:100%;padding:18px;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 20px rgba(29,158,117,0.35);transition:all .2s;margin-bottom:10px;}
+.btn-instalar-grande:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(29,158,117,0.45);}
+.btn-instalar-grande:active{transform:translateY(0);}
+.btn-instalar-grande.instalando{background:linear-gradient(135deg,#378ADD,#185FA5);}
+.btn-instalar-grande.instalado{background:linear-gradient(135deg,#639922,#3d6613);}
+.btn-abrir{width:100%;padding:14px;background:var(--verde-claro);color:var(--verde-oscuro);border:2px solid var(--verde);border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-abrir:hover{background:#9FE1CB;}
+
+/* ESTADO INSTALACION */
+.estado{display:none;align-items:center;gap:10px;background:var(--verde-claro);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--verde-oscuro);font-weight:500;}
+.estado.show{display:flex;}
+.estado-ico{font-size:20px;flex-shrink:0;}
+
+/* VENTAJAS */
+.ventajas{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:1.25rem;}
+.ventajas-titulo{font-size:11px;font-weight:600;color:var(--texto3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.ventaja{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;}
+.ventaja:last-child{margin-bottom:0;}
+.ventaja-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ventaja-txt{flex:1;}
+.ventaja-txt b{font-size:13px;font-weight:600;display:block;margin-bottom:2px;}
+.ventaja-txt span{font-size:12px;color:var(--texto2);}
+
+/* INSTRUCCIONES iOS */
+.ios-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:1.25rem;display:none;}
+.ios-card.show{display:block;}
+.ios-titulo{font-size:15px;font-weight:700;margin-bottom:4px;}
+.ios-sub{font-size:12px;color:var(--texto2);margin-bottom:1rem;}
+.ios-paso{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+.ios-paso:last-child{margin-bottom:0;}
+.ios-num{width:28px;height:28px;border-radius:50%;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.ios-info b{font-size:13px;font-weight:600;display:block;margin-bottom:3px;}
+.ios-info span{font-size:12px;color:var(--texto2);line-height:1.5;}
+.ios-badge{display:inline-flex;align-items:center;gap:4px;background:#F0F0F5;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:500;margin-top:4px;}
+
+/* COMPARTIR */
+.btn-compartir{width:100%;padding:14px;background:var(--gris-bg);border:1px solid var(--gris-borde);border-radius:14px;font-family:inherit;font-size:14px;font-weight:500;color:var(--texto2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* ANIMACION PULSO */
+@keyframes pulso{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
+.pulsando{animation:pulso 1.5s infinite;}
+
+/* CONFETI simulado */
+.confeti{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:999;display:none;}
+.confeti.show{display:block;}
+.confeti-item{position:absolute;width:8px;height:8px;border-radius:2px;animation:caer 2s ease-in forwards;}
+@keyframes caer{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-logo">$</div>
+  <h1>Constructor de Riqueza</h1>
+  <p>Tu app personal de finanzas y libertad financiera. Gratis, sin publicidad, siempre contigo.</p>
+  <div class="hero-badges">
+    <div class="hero-badge">⚡ Gratis</div>
+    <div class="hero-badge">📱 Android e iPhone</div>
+    <div class="hero-badge">💻 PC también</div>
+    <div class="hero-badge">🔒 100% seguro</div>
+  </div>
+</div>
+
+<div class="contenido">
+
+  <!-- CARD INSTALACION -->
+  <div class="install-card">
+    <div style="font-size:48px;margin-bottom:12px;" id="main-ico">📲</div>
+    <h2 id="main-titulo">Instala la app gratis</h2>
+    <p id="main-desc">Con un solo clic instala el Constructor de Riqueza en tu dispositivo y accede desde tu pantalla de inicio.</p>
+
+    <div class="estado" id="estado-instalando">
+      <div class="estado-ico">⏳</div>
+      <span>Preparando la instalación...</span>
+    </div>
+    <div class="estado" id="estado-instalado">
+      <div class="estado-ico">✅</div>
+      <span>¡App instalada correctamente! Búscala en tu pantalla de inicio.</span>
+    </div>
+
+    <button class="btn-instalar-grande pulsando" id="btn-instalar" onclick="instalar()">
+      <span style="font-size:22px;">⬇️</span>
+      <span id="btn-txt">Instalar app ahora — Gratis</span>
+    </button>
+    <button class="btn-abrir" onclick="abrirApp()">🚀 Abrir la app</button>
+  </div>
+
+  <!-- INSTRUCCIONES iOS (se muestra solo en iPhone) -->
+  <div class="ios-card" id="ios-card">
+    <div class="ios-titulo">📱 Cómo instalar en iPhone</div>
+    <div class="ios-sub">Safari detectó que usas iPhone. Sigue estos 3 pasos rápidos:</div>
+
+    <div class="ios-paso">
+      <div class="ios-num">1</div>
+      <div class="ios-info">
+        <b>Toca el botón Compartir</b>
+        <span>Es el ícono con una flecha apuntando hacia arriba, en la barra inferior de Safari</span>
+        <div class="ios-badge">📤 Botón compartir</div>
+      </div>
+    </div>
+
+    <div class="ios-paso">
+      <div class="ios-num">2</div>
+      <div class="ios-info">
+        <b>Selecciona "Agregar a pantalla de inicio"</b>
+        <span>Desliza el menú hacia abajo hasta encontrar esta opción y tócala</span>
+        <div class="ios-badge">➕ Agregar a pantalla de inicio</div>
+      </div>
+    </div>
+
+    <div class="ios-paso">
+      <div class="ios-num">3</div>
+      <div class="ios-info">
+        <b>Toca "Agregar" para confirmar</b>
+        <span>La app aparecerá en tu pantalla de inicio lista para usar</span>
+        <div class="ios-badge">✅ Listo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VENTAJAS -->
+  <div class="ventajas">
+    <div class="ventajas-titulo">¿Por qué instalarla?</div>
+    <div class="ventaja">
+      <div class="ventaja-ico" style="background:#E1F5EE;">🚀</div>
+      <div class="ventaja-txt"><b>Acceso instantáneo</b><span>En tu pantalla de inicio como cualquier app, sin abrir el navegador</span></div>
+    </div>
+    <div class="ventaja">
+      <div class="ventaja-ico" style="background:#E6F1FB;">🔔</div>
+      <div class="ventaja-txt"><b>Notificaciones</b><span>Recibe alertas de tus metas y movimientos financieros</span></div>
+    </div>
+    <div class="ventaja">
+      <div class="ventaja-ico" style="background:#FAEEDA;">💾</div>
+      <div class="ventaja-txt"><b>Sin ocupar espacio</b><span>No descarga nada pesado. Pesa menos de 1MB</span></div>
+    </div>
+    <div class="ventaja">
+      <div class="ventaja-ico" style="background:#EEEDFE;">🔒</div>
+      <div class="ventaja-txt"><b>100% seguro</b><span>Tus datos financieros están protegidos y encriptados</span></div>
+    </div>
+  </div>
+
+  <button class="btn-compartir" onclick="compartir()">
+    📤 Compartir con un amigo
+  </button>
+
+</div>
+
+<div class="confeti" id="confeti"></div>
+
+<script>
+// ── DETECTAR DISPOSITIVO ──
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isAndroid = /Android/.test(navigator.userAgent);
+const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+let deferredPrompt = null;
+
+// Mostrar instrucciones iOS si es iPhone con Safari
+if(isIOS && isSafari){
+  document.getElementById('ios-card').classList.add('show');
+  document.getElementById('main-ico').textContent = '🍎';
+  document.getElementById('main-titulo').textContent = 'Instala en tu iPhone';
+  document.getElementById('main-desc').textContent = 'Sigue los 3 pasos de abajo para instalar la app en tu iPhone en menos de 30 segundos.';
+  document.getElementById('btn-instalar').style.display = 'none';
+}
+
+// Capturar evento de instalación (Android/Chrome/PC)
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar botón con animación
+  const btn = document.getElementById('btn-instalar');
+  btn.classList.add('pulsando');
+});
+
+// Si ya está instalada
+window.addEventListener('appinstalled', () => {
+  mostrarInstalado();
+});
+
+async function instalar(){
+  if(deferredPrompt){
+    // Android/Chrome/PC — instalación automática
+    const btn = document.getElementById('btn-instalar');
+    btn.classList.remove('pulsando');
+    btn.classList.add('instalando');
+    document.getElementById('btn-txt').textContent = 'Abriendo instalador...';
+    document.getElementById('estado-instalando').classList.add('show');
+
+    deferredPrompt.prompt();
+    const {outcome} = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+
+    if(outcome === 'accepted'){
+      mostrarInstalado();
+    } else {
+      // Usuario canceló
+      btn.classList.remove('instalando');
+      btn.classList.add('pulsando');
+      document.getElementById('btn-txt').textContent = 'Instalar app ahora — Gratis';
+      document.getElementById('estado-instalando').classList.remove('show');
+    }
+  } else if(isIOS){
+    // iOS — mostrar instrucciones
+    document.getElementById('ios-card').scrollIntoView({behavior:'smooth'});
+  } else {
+    // Ya instalada o no compatible — abrir app
+    abrirApp();
+  }
+}
+
+function mostrarInstalado(){
+  document.getElementById('estado-instalando').classList.remove('show');
+  document.getElementById('estado-instalado').classList.add('show');
+  const btn = document.getElementById('btn-instalar');
+  btn.classList.remove('instalando','pulsando');
+  btn.classList.add('instalado');
+  document.getElementById('btn-txt').textContent = '✅ App instalada';
+  btn.disabled = true;
+  lanzarConfeti();
+}
+
+function abrirApp(){
+  window.location.href = '/';
+}
+
+function compartir(){
+  const url = window.location.origin + '/instalar';
+  const texto = '📱 Instala el Constructor de Riqueza — tu app personal de finanzas y libertad financiera. ¡Es gratis!\n\n' + url;
+  if(navigator.share){
+    navigator.share({title:'Constructor de Riqueza', text:texto, url});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>{
+      alert('Link copiado al portapapeles ✓\n\n' + url);
+    });
+  }
+}
+
+function lanzarConfeti(){
+  const confeti = document.getElementById('confeti');
+  confeti.classList.add('show');
+  const colores = ['#1D9E75','#378ADD','#BA7517','#D4537E','#7F77DD','#fff'];
+  for(let i=0; i<40; i++){
+    const div = document.createElement('div');
+    div.className = 'confeti-item';
+    div.style.cssText = `
+      left:${Math.random()*100}%;
+      top:-10px;
+      background:${colores[Math.floor(Math.random()*colores.length)]};
+      animation-delay:${Math.random()*1}s;
+      animation-duration:${1.5+Math.random()*1}s;
+      width:${6+Math.random()*8}px;
+      height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+    `;
+    confeti.appendChild(div);
+  }
+  setTimeout(()=>{confeti.classList.remove('show');confeti.innerHTML='';}, 3000);
+}
+
+// Registrar service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
+</body>
+</html>

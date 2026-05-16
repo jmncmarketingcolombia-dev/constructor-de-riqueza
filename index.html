@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Constructor de Riqueza</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --verde:#1D9E75;--verde-claro:#E1F5EE;--verde-oscuro:#0F6E56;
+  --rojo:#993C1D;--rojo-claro:#FAECE7;
+  --gris-bg:#F7F6F3;--gris-card:#FFFFFF;
+  --gris-borde:#E2E0D8;--gris-borde2:#D0CEC5;
+  --texto:#1A1A18;--texto2:#5F5E5A;--texto3:#888780;
+  --radio:10px;--radio-lg:14px;--shadow:0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.10);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--gris-bg);color:var(--texto);font-size:14px;line-height:1.5;min-height:100vh;}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.auth-box{background:var(--gris-card);border:1px solid var(--gris-borde);border-radius:var(--radio-lg);padding:2.5rem 2rem;max-width:440px;width:100%;box-shadow:var(--shadow);}
+.auth-logo{width:58px;height:58px;background:var(--verde-claro);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--verde-oscuro);margin:0 auto 1.25rem;}
+.auth-box h1{font-size:20px;font-weight:600;text-align:center;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--texto2);text-align:center;margin-bottom:1.5rem;}
+.campo{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.campo label{font-size:12px;color:var(--texto2);font-weight:500;}
+.campo input,.campo select{height:40px;border:1px solid var(--gris-borde2);border-radius:var(--radio);padding:0 12px;font-family:inherit;font-size:14px;color:var(--texto);background:var(--gris-bg);outline:none;transition:border-color .2s;}
+.campo input:focus,.campo select:focus{border-color:var(--verde);}
+.campo .hint{font-size:11px;color:var(--texto3);}
+.btn-verde-full{width:100%;padding:11px;background:var(--verde);color:#fff;border:none;border-radius:var(--radio);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:4px;}
+.btn-verde-full:hover{background:var(--verde-oscuro);}
+.btn-verde-full:disabled{background:#9FE1CB;cursor:not-allowed;}
+.auth-switch{text-align:center;margin-top:1.25rem;font-size:13px;color:var(--texto2);}
+.auth-switch a{color:var(--verde);cursor:pointer;font-weight:600;}
+.msg-err{background:#FAECE7;border:1px solid #F5C4B3;border-radius:var(--radio);padding:9px 12px;font-size:12px;color:var(--rojo);margin-bottom:12px;display:none;}
+.msg-ok{background:var(--verde-claro);border:1px solid #9FE1CB;border-radius:var(--radio);padding:9px 12px;font-size:12px;color:var(--verde-oscuro);margin-bottom:12px;display:none;}
+
+/* BIENVENIDA */
+.bienvenida-wrap{min-height:100vh;display:none;align-items:center;justify-content:center;padding:2rem;background:linear-gradient(135deg,#0F6E56 0%,#1D9E75 60%,#378ADD 100%);}
+.bienvenida-box{background:#fff;border-radius:20px;padding:3rem 2rem;max-width:480px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.15);}
+.bienvenida-ico{font-size:56px;margin-bottom:1rem;}
+.bienvenida-box h2{font-size:13px;font-weight:600;color:var(--verde);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.bienvenida-nombre{font-size:28px;font-weight:700;color:var(--texto);margin-bottom:12px;}
+.bienvenida-box p{font-size:14px;color:var(--texto2);line-height:1.6;margin-bottom:2rem;}
+.btn-ingresar{padding:13px 40px;background:var(--verde);color:#fff;border:none;border-radius:var(--radio);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;}
+.btn-ingresar:hover{background:var(--verde-oscuro);}
+.bienvenida-datos{display:flex;gap:12px;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;}
+.bienvenida-dato{background:var(--gris-bg);border-radius:var(--radio);padding:10px 16px;font-size:12px;color:var(--texto2);}
+.bienvenida-dato strong{display:block;font-size:14px;color:var(--texto);font-weight:600;}
+
+/* TOPBAR */
+#app,#panel-admin{display:none;}
+.topbar{background:var(--gris-card);border-bottom:1px solid var(--gris-borde);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-logo{width:32px;height:32px;background:var(--verde-claro);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--verde-oscuro);}
+.topbar-brand span{font-size:15px;font-weight:600;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.chip-user{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--verde-claro);border-radius:20px;font-size:12px;font-weight:600;color:var(--verde-oscuro);}
+.chip-user .av{width:22px;height:22px;border-radius:50%;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;}
+.btn-sec{padding:5px 12px;border:1px solid var(--gris-borde2);border-radius:var(--radio);background:transparent;font-family:inherit;font-size:12px;color:var(--texto2);cursor:pointer;}
+.btn-sec:hover{border-color:var(--verde);color:var(--verde);}
+
+/* TABS PRINCIPALES */
+.main-tabs{background:var(--gris-card);border-bottom:1px solid var(--gris-borde);padding:0 1.5rem;display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
+.main-tabs::-webkit-scrollbar{display:none;}
+.main-tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--texto3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:all .2s;}
+.main-tab:hover{color:var(--texto2);}
+.main-tab.active{color:var(--verde);border-bottom-color:var(--verde);font-weight:600;}
+
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* MESES */
+.meses-nav{background:var(--gris-card);border-bottom:1px solid var(--gris-borde);padding:0 1.5rem;overflow-x:auto;display:flex;gap:4px;height:44px;align-items:center;scrollbar-width:none;}
+.meses-nav::-webkit-scrollbar{display:none;}
+.mes-btn{padding:4px 12px;border-radius:20px;border:1px solid transparent;background:transparent;font-family:inherit;font-size:12px;color:var(--texto2);cursor:pointer;white-space:nowrap;}
+.mes-btn.active{background:var(--verde);color:#fff;font-weight:600;}
+
+/* CONTENIDO */
+.contenido{max-width:980px;margin:0 auto;padding:1.5rem;}
+.metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:1.5rem;}
+.metrica{background:var(--gris-card);border:1px solid var(--gris-borde);border-radius:var(--radio-lg);padding:1rem 1.25rem;box-shadow:var(--shadow);}
+.metrica .lbl{font-size:11px;color:var(--texto3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.metrica .val{font-size:22px;font-weight:600;line-height:1;}
+.metrica .sub{font-size:11px;margin-top:5px;color:var(--texto3);}
+.pos{color:var(--verde-oscuro)!important;}.neg{color:var(--rojo)!important;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem;}
+.grid2 .full{grid-column:1/-1;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+.card{background:var(--gris-card);border:1px solid var(--gris-borde);border-radius:var(--radio-lg);padding:1.25rem;box-shadow:var(--shadow);}
+.card h3{font-size:11px;font-weight:600;color:var(--texto3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;border-bottom:1px solid var(--gris-borde);}
+.tab{padding:6px 14px;font-size:13px;color:var(--texto2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;}
+.tab.active{color:var(--verde);border-bottom-color:var(--verde);font-weight:600;}
+.btn-agregar{width:100%;padding:9px;background:var(--verde);color:#fff;border:none;border-radius:var(--radio);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-agregar:hover{background:var(--verde-oscuro);}
+.lista-mov{max-height:155px;overflow-y:auto;margin-top:10px;}
+.mov-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gris-borde);font-size:12px;gap:8px;}
+.mov-item:last-child{border-bottom:none;}
+.mov-desc{color:var(--texto2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mov-val{font-weight:600;white-space:nowrap;}
+.btn-del{width:20px;height:20px;border-radius:4px;border:none;background:#FAECE7;color:var(--rojo);font-size:11px;cursor:pointer;flex-shrink:0;}
+.regla{display:flex;gap:8px;margin-top:1rem;}
+.regla-bloque{flex:1;border-radius:var(--radio);padding:12px 10px;text-align:center;}
+.regla-pct{font-size:22px;font-weight:700;}
+.regla-nom{font-size:11px;margin-top:3px;}
+.regla-val{font-size:11px;margin-top:6px;font-weight:600;}
+.cat-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.cat-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.cat-info{flex:1;min-width:0;}
+.cat-nom{font-size:12px;}
+.barra-wrap{height:4px;background:var(--gris-bg);border-radius:3px;margin-top:3px;overflow:hidden;}
+.barra{height:4px;border-radius:3px;}
+.cat-monto{font-size:12px;color:var(--texto2);white-space:nowrap;}
+.hitos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.hito{display:flex;gap:10px;align-items:flex-start;}
+.hito-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px;}
+.h-done{background:var(--verde);color:#fff;}.h-next{background:#9FE1CB;color:#085041;}.h-pend{background:#F1EFE8;color:var(--texto3);border:1px solid var(--gris-borde2);}
+.hito-info h4{font-size:13px;font-weight:600;}
+.hito-info p{font-size:12px;color:var(--texto2);margin-top:2px;line-height:1.4;}
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.tip{background:var(--gris-bg);border-radius:var(--radio);padding:12px;border-left:3px solid var(--verde);}
+.tip-tit{font-size:12px;font-weight:600;color:var(--verde-oscuro);margin-bottom:4px;}
+.tip p{font-size:12px;color:var(--texto2);line-height:1.5;}
+.nivel-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.nivel-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--gris-borde2);background:transparent;font-family:inherit;font-size:12px;color:var(--texto2);cursor:pointer;}
+.nivel-btn.active{background:var(--verde);color:#fff;border-color:var(--verde);font-weight:600;}
+.pie-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.pie-ley-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--texto2);}
+.pie-ley-color{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* ══ 6 FRASCOS ══ */
+.frascos-hero{background:linear-gradient(135deg,#0F6E56 0%,#1D9E75 50%,#185FA5 100%);border-radius:var(--radio-lg);padding:2rem;margin-bottom:1.5rem;color:#fff;position:relative;overflow:hidden;}
+.frascos-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.frascos-hero::after{content:'';position:absolute;bottom:-60px;left:-20px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.frascos-hero h2{font-size:22px;font-weight:700;margin-bottom:4px;}
+.frascos-hero p{font-size:13px;opacity:.85;margin-bottom:1.5rem;}
+.frasco-ingreso-wrap{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
+.frasco-ingreso-wrap .campo{flex:1;min-width:180px;margin:0;}
+.frasco-ingreso-wrap .campo label{color:rgba(255,255,255,0.8);font-size:12px;}
+.frasco-ingreso-wrap .campo input{background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;height:44px;font-size:16px;font-weight:600;}
+.frasco-ingreso-wrap .campo input::placeholder{color:rgba(255,255,255,0.5);}
+.frasco-ingreso-wrap .campo input:focus{border-color:#fff;background:rgba(255,255,255,0.2);}
+.btn-calcular{padding:12px 28px;background:#fff;color:var(--verde-oscuro);border:none;border-radius:var(--radio);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;height:44px;transition:all .2s;}
+.btn-calcular:hover{background:var(--verde-claro);}
+
+.frascos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:1.5rem;}
+.frasco-card{background:var(--gris-card);border:1px solid var(--gris-borde);border-radius:var(--radio-lg);padding:1.25rem;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.frasco-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.frasco-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--radio-lg) var(--radio-lg) 0 0;}
+.frasco-nec::before{background:linear-gradient(90deg,#1D9E75,#5DCAA5);}
+.frasco-ffa::before{background:linear-gradient(90deg,#185FA5,#378ADD);}
+.frasco-edu::before{background:linear-gradient(90deg,#7F77DD,#AFA9EC);}
+.frasco-play::before{background:linear-gradient(90deg,#D85A30,#EF9F27);}
+.frasco-ltss::before{background:linear-gradient(90deg,#BA7517,#FAC775);}
+.frasco-give::before{background:linear-gradient(90deg,#D4537E,#ED93B1);}
+
+.frasco-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.frasco-ico-wrap{display:flex;align-items:center;gap:10px;}
+.frasco-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.frasco-nec .frasco-ico{background:#E1F5EE;}
+.frasco-ffa .frasco-ico{background:#E6F1FB;}
+.frasco-edu .frasco-ico{background:#EEEDFE;}
+.frasco-play .frasco-ico{background:#FFF0E8;}
+.frasco-ltss .frasco-ico{background:#FAEEDA;}
+.frasco-give .frasco-ico{background:#FBEAF0;}
+.frasco-titulo{font-size:14px;font-weight:700;color:var(--texto);}
+.frasco-subtitulo{font-size:11px;color:var(--texto3);margin-top:2px;}
+.frasco-pct-badge{font-size:13px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.frasco-nec .frasco-pct-badge{background:#E1F5EE;color:#0F6E56;}
+.frasco-ffa .frasco-pct-badge{background:#E6F1FB;color:#185FA5;}
+.frasco-edu .frasco-pct-badge{background:#EEEDFE;color:#3C3489;}
+.frasco-play .frasco-pct-badge{background:#FFF0E8;color:#993C1D;}
+.frasco-ltss .frasco-pct-badge{background:#FAEEDA;color:#854F0B;}
+.frasco-give .frasco-pct-badge{background:#FBEAF0;color:#993556;}
+
+.frasco-monto{font-size:28px;font-weight:700;color:var(--texto);margin:8px 0 4px;}
+.frasco-monto-sub{font-size:11px;color:var(--texto3);margin-bottom:12px;}
+.frasco-barra-wrap{height:6px;background:var(--gris-bg);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.frasco-barra{height:6px;border-radius:4px;transition:width .6s ease;}
+.frasco-nec .frasco-barra{background:linear-gradient(90deg,#1D9E75,#5DCAA5);}
+.frasco-ffa .frasco-barra{background:linear-gradient(90deg,#185FA5,#378ADD);}
+.frasco-edu .frasco-barra{background:linear-gradient(90deg,#7F77DD,#AFA9EC);}
+.frasco-play .frasco-barra{background:linear-gradient(90deg,#D85A30,#EF9F27);}
+.frasco-ltss .frasco-barra{background:linear-gradient(90deg,#BA7517,#FAC775);}
+.frasco-give .frasco-barra{background:linear-gradient(90deg,#D4537E,#ED93B1);}
+
+.frasco-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.frasco-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--gris-bg);color:var(--texto2);}
+.frasco-regla{font-size:11px;color:var(--texto3);line-height:1.5;padding-top:10px;border-top:1px solid var(--gris-borde);}
+.frasco-regla strong{color:var(--texto2);}
+
+.frasco-total-bar{background:var(--gris-card);border:1px solid var(--gris-borde);border-radius:var(--radio-lg);padding:1.25rem;box-shadow:var(--shadow);margin-bottom:1.5rem;}
+.frasco-total-bar h3{font-size:11px;font-weight:600;color:var(--texto3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;}
+.frasco-dist{display:flex;height:12px;border-radius:8px;overflow:hidden;gap:2px;margin-bottom:10px;}
+.frasco-dist-seg{height:12px;transition:width .6s ease;}
+.frasco-dist-legend{display:flex;flex-wrap:wrap;gap:10px;}
+.frasco-dist-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--texto2);}
+.frasco-dist-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* ADMIN */
+.admin-wrap{max-width:960px;margin:0 auto;padding:1.5rem;}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;}
+.badge-admin{padding:4px 12px;background:#FAECE7;border-radius:20px;font-size:12px;font-weight:600;color:var(--rojo);}
+.stats-admin{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem;}
+.stat-a{background:var(--gris-card);border:1px solid var(--gris-borde);border-radius:var(--radio-lg);padding:1rem 1.25rem;}
+.stat-a .lbl{font-size:11px;color:var(--texto3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.stat-a .val{font-size:28px;font-weight:600;}
+.search-input{width:100%;height:38px;border:1px solid var(--gris-borde2);border-radius:var(--radio);padding:0 12px;font-family:inherit;font-size:13px;background:var(--gris-bg);outline:none;margin-bottom:1rem;}
+.search-input:focus{border-color:var(--verde);}
+.tabla-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--gris-bg);padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;color:var(--texto3);border-bottom:1px solid var(--gris-borde);}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--gris-borde);color:var(--texto2);}
+tbody tr:hover td{background:#FAFAF8;}
+.btn-eliminar{padding:4px 10px;background:#FAECE7;border:none;border-radius:6px;color:var(--rojo);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-export{padding:7px 16px;background:var(--verde-claro);border:1px solid #9FE1CB;border-radius:var(--radio);color:var(--verde-oscuro);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+
+#notif{position:fixed;bottom:24px;right:24px;background:var(--texto);color:#fff;padding:10px 18px;border-radius:var(--radio);font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:9999;}
+#notif.show{opacity:1;transform:translateY(0);}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--gris-borde2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="auth-wrap" id="pantalla-login">
+  <div class="auth-box">
+    <div class="auth-logo">$</div>
+    <h1>Constructor de Riqueza</h1>
+    <p class="auth-sub">Inicia sesion en tu cuenta</p>
+    <div class="msg-err" id="login-err"></div>
+    <div class="campo"><label>Correo electronico</label><input type="email" id="login-email" placeholder="tucorreo@gmail.com" /></div>
+    <div class="campo"><label>Contrasena</label><input type="password" id="login-pass" placeholder="Tu contrasena" onkeydown="if(event.key==='Enter')hacerLogin()" /></div>
+    <button class="btn-verde-full" id="btn-login" onclick="hacerLogin()">Ingresar →</button>
+    <div class="auth-switch">¿No tienes cuenta? <a onclick="irA('pantalla-registro')">Registrate aqui</a></div>
+    <div style="text-align:center;margin-top:10px;"><a onclick="irA('pantalla-admin-login')" style="font-size:12px;color:var(--texto3);cursor:pointer;">Acceso administrador</a></div>
+  </div>
+</div>
+
+<!-- REGISTRO -->
+<div class="auth-wrap" id="pantalla-registro" style="display:none;">
+  <div class="auth-box">
+    <div class="auth-logo">$</div>
+    <h1>Crear cuenta</h1>
+    <p class="auth-sub">Completa tus datos para registrarte</p>
+    <div class="msg-err" id="reg-err"></div>
+    <div class="msg-ok" id="reg-ok"></div>
+    <div class="campo"><label>Nombre completo</label><input type="text" id="reg-nombre" placeholder="Ej: Laura Gomez Reyes" /></div>
+    <div class="campo"><label>Correo electronico</label><input type="email" id="reg-email" placeholder="tucorreo@gmail.com" /></div>
+    <div class="campo"><label>Numero de celular</label><input type="tel" id="reg-cel" placeholder="300 123 4567" /><span class="hint">Colombiano o con indicativo internacional</span></div>
+    <div class="campo"><label>Contrasena</label><input type="password" id="reg-pass" placeholder="Minimo 6 caracteres" /></div>
+    <div class="campo"><label>Confirmar contrasena</label><input type="password" id="reg-pass2" placeholder="Repite tu contrasena" /></div>
+    <button class="btn-verde-full" id="btn-registro" onclick="hacerRegistro()">Crear mi cuenta →</button>
+    <div class="auth-switch">¿Ya tienes cuenta? <a onclick="irA('pantalla-login')">Inicia sesion</a></div>
+  </div>
+</div>
+
+<!-- LOGIN ADMIN -->
+<div class="auth-wrap" id="pantalla-admin-login" style="display:none;">
+  <div class="auth-box">
+    <div class="auth-logo" style="background:#FAECE7;color:#993C1D;">A</div>
+    <h1>Panel Administrador</h1>
+    <p class="auth-sub">Acceso restringido</p>
+    <div class="msg-err" id="admin-login-err"></div>
+    <div class="campo"><label>Contrasena</label><input type="password" id="admin-pass-inp" placeholder="Contrasena maestra" onkeydown="if(event.key==='Enter')loginAdmin()" /></div>
+    <button class="btn-verde-full" style="background:#7a2f16;" onclick="loginAdmin()">Entrar al panel</button>
+    <div class="auth-switch"><a onclick="irA('pantalla-login')">Volver al login</a></div>
+  </div>
+</div>
+
+<!-- BIENVENIDA -->
+<div class="bienvenida-wrap" id="pantalla-bienvenida">
+  <div class="bienvenida-box">
+    <div class="bienvenida-ico">🎉</div>
+    <h2>Bienvenido,</h2>
+    <div class="bienvenida-nombre" id="bienvenida-nombre"></div>
+    <p>a tu Constructor de Riqueza Personal.<br>Tu espacio para tomar el control de tus finanzas.</p>
+    <button class="btn-ingresar" onclick="entrarApp()">Comenzar ahora →</button>
+    <div class="bienvenida-datos">
+      <div class="bienvenida-dato"><strong id="bienvenida-mes"></strong>Mes actual</div>
+      <div class="bienvenida-dato"><strong id="bienvenida-fecha"></strong>Fecha de hoy</div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div id="panel-admin">
+  <div class="topbar">
+    <div class="topbar-brand"><div class="topbar-logo" style="background:#FAECE7;color:#993C1D;">A</div><span>Constructor de Riqueza</span></div>
+    <div class="topbar-right"><span class="badge-admin">Administrador</span><button class="btn-sec" onclick="cerrarAdmin()">Cerrar sesion</button></div>
+  </div>
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div><h2 style="font-size:18px;font-weight:600;">Usuarios registrados</h2><p style="font-size:13px;color:var(--texto2);margin-top:3px;">Gestiona todos los usuarios</p></div>
+      <button class="btn-export" onclick="exportarCSV()">Exportar CSV</button>
+    </div>
+    <div class="stats-admin" id="admin-stats"></div>
+    <div class="card">
+      <input class="search-input" type="text" id="admin-buscar" placeholder="Buscar por nombre, correo o celular..." oninput="renderTabla()" />
+      <div class="tabla-wrap">
+        <table><thead><tr><th>#</th><th>Nombre</th><th>Correo</th><th>Celular</th><th>Registro</th><th>Ultimo acceso</th><th>Accion</th></tr></thead>
+        <tbody id="tabla-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand"><div class="topbar-logo">$</div><span>Constructor de Riqueza</span></div>
+    <div class="topbar-right">
+      <div class="chip-user"><div class="av" id="user-av"></div><span id="user-chip-nombre"></span></div>
+      <button class="btn-sec" onclick="cerrarSesion()">Cerrar sesion</button>
+    </div>
+  </div>
+
+  <!-- TABS PRINCIPALES -->
+  <div class="main-tabs">
+    <button class="main-tab active" onclick="setMainTab('dashboard',this)">📊 Dashboard</button>
+    <button class="main-tab" onclick="setMainTab('frascos',this)">🏺 Cash Control</button>
+    <button class="main-tab" onclick="setMainTab('movimientos',this)">💸 Movimientos</button>
+    <button class="main-tab" onclick="setMainTab('presupuesto',this)">🎯 Presupuesto</button>
+    <button class="main-tab" onclick="setMainTab('camino',this)">🚀 Mi Camino</button>
+  </div>
+
+  <div class="meses-nav" id="meses-nav"></div>
+
+  <div class="contenido">
+
+    <!-- TAB DASHBOARD -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="metricas">
+        <div class="metrica"><div class="lbl">Ingresos</div><div class="val" id="m-ing">$0</div><div class="sub" id="m-ing-sub">Registra tu salario</div></div>
+        <div class="metrica"><div class="lbl">Gastos</div><div class="val" id="m-gas">$0</div><div class="sub neg" id="m-gas-sub">0% del ingreso</div></div>
+        <div class="metrica"><div class="lbl">Ahorro</div><div class="val" id="m-aho">$0</div><div class="sub" id="m-aho-sub">Meta: 20%</div></div>
+        <div class="metrica"><div class="lbl">Tasa de ahorro</div><div class="val" id="m-tasa">0%</div><div class="sub" id="m-tasa-sub">Sin datos aun</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Distribucion de gastos</h3>
+          <div style="position:relative;width:100%;height:195px;"><canvas id="pieChart"></canvas></div>
+          <div class="pie-legend" id="pie-legend"><span style="font-size:12px;color:var(--texto3);">Agrega gastos para ver la distribucion</span></div>
+        </div>
+        <div class="card">
+          <h3>Evolucion del ahorro</h3>
+          <div style="position:relative;width:100%;height:195px;"><canvas id="lineChart"></canvas></div>
+        </div>
+        <div class="card full">
+          <h3>Gastos por categoria</h3>
+          <div id="cat-barras"><p style="font-size:12px;color:var(--texto3);text-align:center;padding:1rem 0;">Sin gastos registrados este mes</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6 FRASCOS -->
+    <div class="tab-panel" id="tab-frascos">
+      <div class="frascos-hero">
+        <h2>🏺 Sistema Cash Control</h2>
+        <p>Metodo de T. Harv Eker — divide automaticamente tus ingresos para construir riqueza real</p>
+        <div class="frasco-ingreso-wrap">
+          <div class="campo">
+            <label>Ingreso mensual a distribuir</label>
+            <input type="number" id="frasco-ingreso-inp" placeholder="Ej: 3000000" min="0" step="100000" oninput="calcularFrascos(this.value)" />
+          </div>
+          <button class="btn-calcular" onclick="calcularFrascos(document.getElementById('frasco-ingreso-inp').value)">Calcular →</button>
+        </div>
+      </div>
+
+      <div class="frasco-total-bar" id="frasco-dist-bar" style="display:none;">
+        <h3>Distribucion visual de tu ingreso</h3>
+        <div class="frasco-dist" id="frasco-dist"></div>
+        <div class="frasco-dist-legend" id="frasco-dist-legend"></div>
+      </div>
+
+      <div class="frascos-grid" id="frascos-grid">
+        <!-- Se renderizan dinamicamente -->
+      </div>
+    </div>
+
+    <!-- TAB MOVIMIENTOS -->
+    <div class="tab-panel" id="tab-movimientos">
+      <div class="grid2">
+        <div class="card">
+          <h3>Registrar movimiento</h3>
+          <div class="tabs">
+            <button class="tab active" id="tab-ing" onclick="setTab('ing')">+ Ingreso</button>
+            <button class="tab" id="tab-gas" onclick="setTab('gas')">- Gasto</button>
+          </div>
+          <div class="campo"><label>Descripcion</label><input type="text" id="inp-desc" placeholder="Ej: Salario, Arriendo, Mercado..." /></div>
+          <div class="campo"><label>Valor en pesos colombianos</label><input type="number" id="inp-val" placeholder="0" min="0" step="1000" /></div>
+          <div class="campo" id="campo-cat">
+            <label>Categoria</label>
+            <select id="inp-cat">
+              <option value="vivienda">Vivienda (arriendo, servicios)</option>
+              <option value="alimentacion">Alimentacion (mercado, restaurantes)</option>
+              <option value="transporte">Transporte (SITP, Uber, gasolina)</option>
+              <option value="salud">Salud (medicina, eps, gym)</option>
+              <option value="educacion">Educacion (cursos, libros)</option>
+              <option value="entretenimiento">Entretenimiento (salidas, streaming)</option>
+              <option value="ahorro">Ahorro e Inversion</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <button class="btn-agregar" onclick="agregar()"><span>+</span> Agregar</button>
+          <div class="lista-mov" id="lista-mov"><p style="text-align:center;color:var(--texto3);font-size:12px;padding:1rem 0;">Sin movimientos este mes</p></div>
+        </div>
+        <div class="card">
+          <h3>Sistema Cash Control</h3>
+          <p style="font-size:12px;color:var(--texto2);margin-bottom:10px;">Distribucion automatica de tus ingresos — T. Harv Eker</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px;">
+            <div class="regla-bloque" style="background:#E1F5EE;"><div class="regla-pct" style="color:#0F6E56;font-size:18px;">55%</div><div class="regla-nom" style="color:#1D9E75;font-size:10px;">Nec. Basicas</div><div class="regla-val" style="color:#0F6E56;" id="r1">—</div></div>
+            <div class="regla-bloque" style="background:#E6F1FB;"><div class="regla-pct" style="color:#185FA5;font-size:18px;">10%</div><div class="regla-nom" style="color:#378ADD;font-size:10px;">Lib. Financiera</div><div class="regla-val" style="color:#185FA5;" id="r2">—</div></div>
+            <div class="regla-bloque" style="background:#EEEDFE;"><div class="regla-pct" style="color:#3C3489;font-size:18px;">10%</div><div class="regla-nom" style="color:#7F77DD;font-size:10px;">Educacion</div><div class="regla-val" style="color:#3C3489;" id="r3">—</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;">
+            <div class="regla-bloque" style="background:#FFF0E8;"><div class="regla-pct" style="color:#993C1D;font-size:18px;">10%</div><div class="regla-nom" style="color:#D85A30;font-size:10px;">Diversion</div><div class="regla-val" style="color:#993C1D;" id="r4">—</div></div>
+            <div class="regla-bloque" style="background:#FAEEDA;"><div class="regla-pct" style="color:#854F0B;font-size:18px;">10%</div><div class="regla-nom" style="color:#BA7517;font-size:10px;">Ahorro Largo Plazo</div><div class="regla-val" style="color:#854F0B;" id="r5">—</div></div>
+            <div class="regla-bloque" style="background:#FBEAF0;"><div class="regla-pct" style="color:#993556;font-size:18px;">5%</div><div class="regla-nom" style="color:#D4537E;font-size:10px;">Donaciones</div><div class="regla-val" style="color:#993556;" id="r6">—</div></div>
+          </div>
+          <p style="font-size:12px;color:var(--texto2);margin-bottom:6px;">Simular ingreso mensual</p>
+          <input type="range" id="sim-rng" min="800000" max="20000000" step="100000" value="3000000" style="width:100%;accent-color:var(--verde);" oninput="simRegla(this.value)" />
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--texto3);margin-top:4px;">
+            <span>$800.000</span><span id="sim-val" style="font-weight:600;color:var(--texto);">$3.000.000</span><span>$20.000.000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB PRESUPUESTO -->
+    <div class="tab-panel" id="tab-presupuesto">
+      <div class="grid2">
+        <div class="card full">
+          <h3>Presupuesto maximo por categoria</h3>
+          <p style="font-size:12px;color:var(--texto2);margin-bottom:12px;">Define cuanto quieres gastar en cada area este mes</p>
+          <div id="pres-campos"></div>
+          <button class="btn-agregar" style="margin-top:6px;" onclick="guardarPresupuestos()">Guardar limites</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB CAMINO -->
+    <div class="tab-panel" id="tab-camino">
+      <div class="grid2">
+        <div class="card full">
+          <h3>Camino hacia la libertad financiera</h3>
+          <div class="nivel-btns">
+            <button class="nivel-btn active" onclick="setNivel(0,this)">Principiante</button>
+            <button class="nivel-btn" onclick="setNivel(1,this)">Intermedio</button>
+            <button class="nivel-btn" onclick="setNivel(2,this)">Avanzado</button>
+          </div>
+          <div class="hitos-grid" id="hitos-wrap"></div>
+        </div>
+        <div class="card full">
+          <h3>Consejos financieros para Colombia</h3>
+          <div class="tips-grid" id="tips-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="notif"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  FIREBASE CONFIG
+// ══════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCylcL1MCIEzNpbdTY7uMVzPvh1zy4_wns",
+  authDomain: "constructor-de-riqueza-1.firebaseapp.com",
+  projectId: "constructor-de-riqueza-1",
+  appId: "1:794886173569:web:ae037201dbf8ccb55cae80"
+};
+const ADMIN_PASSWORD = 'admin2024';
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+let db=null, usuarioActual=null, mesActual=new Date().getMonth();
+let pieChart=null, lineChart=null, tabActual='ing';
+
+// ── UTILS ──────────────────────────────────────────────
+const fmt = v=>'$'+Math.round(Number(v||0)).toLocaleString('es-CO');
+function notif(msg){const el=document.getElementById('notif');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+function mostrarErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',6000);}
+function mostrarOk(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+function fechaHoy(){return new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function fechaLegible(){return new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});}
+function setBtnLoading(id,txt){const b=document.getElementById(id);b.disabled=true;b.innerHTML=`<span class="spinner"></span>${txt}`;}
+function setBtnNormal(id,txt){const b=document.getElementById(id);b.disabled=false;b.textContent=txt;}
+
+function irA(id){
+  ['pantalla-login','pantalla-registro','pantalla-admin-login','pantalla-bienvenida','panel-admin','app']
+    .forEach(p=>{const el=document.getElementById(p);if(el)el.style.display='none';});
+  const dest=document.getElementById(id);
+  const esWrap=['pantalla-login','pantalla-registro','pantalla-admin-login','pantalla-bienvenida'].includes(id);
+  dest.style.display=esWrap?'flex':'block';
+}
+
+function setMainTab(nombre,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+nombre).classList.add('active');
+  btn.classList.add('active');
+  if(nombre==='frascos') renderFrascosIniciales();
+}
+
+// ── FIREBASE ───────────────────────────────────────────
+async function cargarFirebase(cfg){
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js');
+  if(!firebase.apps.length) firebase.initializeApp(cfg);
+  db=firebase.firestore();
+}
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return;}
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+}
+async function fsGet(col,docId){const snap=await db.collection(col).doc(docId).get();return snap.exists?snap.data():null;}
+async function fsSet(col,docId,data){await db.collection(col).doc(docId).set(data,{merge:true});}
+async function fsGetAll(col){const snap=await db.collection(col).get();return snap.docs.map(d=>({id:d.id,...d.data()}));}
+async function fsDelete(col,docId){await db.collection(col).doc(docId).delete();}
+
+// ── REGISTRO ───────────────────────────────────────────
+async function hacerRegistro(){
+  const nombre=document.getElementById('reg-nombre').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const cel=document.getElementById('reg-cel').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  const pass2=document.getElementById('reg-pass2').value;
+  if(!nombre) return mostrarErr('reg-err','Ingresa tu nombre completo.');
+  if(!email||!email.includes('@')) return mostrarErr('reg-err','Ingresa un correo valido.');
+  if(!cel||cel.replace(/\D/g,'').length<7) return mostrarErr('reg-err','Ingresa un celular valido.');
+  if(!pass||pass.length<6) return mostrarErr('reg-err','La contrasena debe tener minimo 6 caracteres.');
+  if(pass!==pass2) return mostrarErr('reg-err','Las contrasenas no coinciden.');
+  setBtnLoading('btn-registro','Registrando...');
+  try{
+    const snap=await db.collection('usuarios').where('email','==',email).get();
+    if(!snap.empty){setBtnNormal('btn-registro','Crear mi cuenta →');return mostrarErr('reg-err','Ya existe una cuenta con ese correo.');}
+    const uid='u'+Date.now();
+    await fsSet('usuarios',uid,{uid,nombre,email,cel,pass,fechaRegistro:fechaHoy(),ultimoAcceso:fechaHoy()});
+    setBtnNormal('btn-registro','Crear mi cuenta →');
+    document.getElementById('reg-err').style.display='none';
+    mostrarOk('reg-ok','Cuenta creada. Redirigiendo...');
+    setTimeout(()=>irA('pantalla-login'),1800);
+  }catch(e){setBtnNormal('btn-registro','Crear mi cuenta →');mostrarErr('reg-err','Error: '+e.message);}
+}
+
+// ── LOGIN ──────────────────────────────────────────────
+async function hacerLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass) return mostrarErr('login-err','Completa todos los campos.');
+  setBtnLoading('btn-login','Verificando...');
+  try{
+    const snap=await db.collection('usuarios').where('email','==',email).where('pass','==',pass).get();
+    if(snap.empty){setBtnNormal('btn-login','Ingresar →');return mostrarErr('login-err','Correo o contrasena incorrectos.');}
+    const user=snap.docs[0].data();
+    await fsSet('usuarios',user.uid,{ultimoAcceso:fechaHoy()});
+    usuarioActual=user;
+    setBtnNormal('btn-login','Ingresar →');
+    mostrarBienvenida(user);
+  }catch(e){setBtnNormal('btn-login','Ingresar →');mostrarErr('login-err','Error: '+e.message);}
+}
+
+function mostrarBienvenida(user){
+  document.getElementById('bienvenida-nombre').textContent=user.nombre;
+  document.getElementById('bienvenida-mes').textContent=MESES[new Date().getMonth()];
+  document.getElementById('bienvenida-fecha').textContent=fechaLegible();
+  irA('pantalla-bienvenida');
+}
+function entrarApp(){iniciarApp();}
+
+// ── ADMIN ──────────────────────────────────────────────
+async function loginAdmin(){
+  const pass=document.getElementById('admin-pass-inp').value;
+  if(pass!==ADMIN_PASSWORD) return mostrarErr('admin-login-err','Contrasena incorrecta.');
+  irA('panel-admin'); await renderPanelAdmin();
+}
+function cerrarAdmin(){document.getElementById('admin-pass-inp').value='';irA('pantalla-login');}
+let todosUsuarios=[];
+async function renderPanelAdmin(){
+  todosUsuarios=await fsGetAll('usuarios');
+  const hoy=fechaHoy();
+  document.getElementById('admin-stats').innerHTML=`
+    <div class="stat-a"><div class="lbl">Total registrados</div><div class="val">${todosUsuarios.length}</div></div>
+    <div class="stat-a"><div class="lbl">Activos hoy</div><div class="val">${todosUsuarios.filter(u=>u.ultimoAcceso===hoy).length}</div></div>`;
+  renderTabla();
+}
+function renderTabla(){
+  const q=(document.getElementById('admin-buscar').value||'').toLowerCase();
+  const lista=todosUsuarios.filter(u=>!q||u.nombre?.toLowerCase().includes(q)||u.email?.includes(q)||u.cel?.includes(q));
+  const tbody=document.getElementById('tabla-body');
+  if(!lista.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--texto3);">Sin usuarios aun</td></tr>`;return;}
+  tbody.innerHTML=lista.map((u,i)=>`<tr><td>${i+1}</td><td>${u.nombre}</td><td>${u.email}</td><td>${u.cel}</td><td>${u.fechaRegistro||'—'}</td><td>${u.ultimoAcceso||'—'}</td><td><button class="btn-eliminar" onclick="eliminarUsuario('${u.uid}')">Eliminar</button></td></tr>`).join('');
+}
+async function eliminarUsuario(uid){
+  if(!confirm('¿Eliminar este usuario?')) return;
+  await fsDelete('usuarios',uid);
+  try{await fsDelete('datos',uid);}catch(e){}
+  await renderPanelAdmin(); notif('Usuario eliminado');
+}
+async function exportarCSV(){
+  const filas=[['#','Nombre','Correo','Celular','Registro','Ultimo acceso']];
+  todosUsuarios.forEach((u,i)=>filas.push([i+1,u.nombre,u.email,u.cel,u.fechaRegistro||'',u.ultimoAcceso||'']));
+  const csv=filas.map(f=>f.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='usuarios.csv'; a.click(); notif('CSV exportado');
+}
+
+// ══════════════════════════════════════════════════════
+//  APP USUARIO
+// ══════════════════════════════════════════════════════
+function cerrarSesion(){
+  usuarioActual=null;
+  if(pieChart){pieChart.destroy();pieChart=null;}
+  if(lineChart){lineChart.destroy();lineChart=null;}
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pass').value='';
+  irA('pantalla-login');
+}
+
+async function iniciarApp(){
+  irA('app');
+  const ini=usuarioActual.nombre.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('user-av').textContent=ini;
+  document.getElementById('user-chip-nombre').textContent=usuarioActual.nombre.split(' ')[0];
+  mesActual=new Date().getMonth();
+  setTab('ing'); renderMeses(); renderTips();
+  const d=await getDatos();
+  renderHitos(d.nivelActivo||0);
+  renderPresCampos(d);
+  renderFrascosIniciales();
+  await actualizarTodo(); simRegla(3000000);
+}
+
+async function getDatos(){const d=await fsGet('datos',usuarioActual.uid);return d||{movimientos:{},presupuestos:{},nivelActivo:0};}
+async function guardarDatos(d){await fsSet('datos',usuarioActual.uid,d);}
+
+function renderMeses(){
+  document.getElementById('meses-nav').innerHTML=MESES_C.map((m,i)=>
+    `<button class="mes-btn ${i===mesActual?'active':''}" onclick="setMes(${i})">${m}</button>`
+  ).join('');
+}
+async function setMes(i){mesActual=i;renderMeses();await actualizarTodo();}
+function setTab(t){
+  tabActual=t;
+  document.getElementById('tab-ing').classList.toggle('active',t==='ing');
+  document.getElementById('tab-gas').classList.toggle('active',t==='gas');
+  document.getElementById('campo-cat').style.display=t==='gas'?'flex':'none';
+}
+
+async function agregar(){
+  const desc=document.getElementById('inp-desc').value.trim();
+  const val=parseFloat(document.getElementById('inp-val').value);
+  const cat=document.getElementById('inp-cat').value;
+  if(!desc) return notif('Escribe una descripcion');
+  if(!val||val<=0) return notif('Ingresa un valor valido');
+  const d=await getDatos();
+  if(!d.movimientos) d.movimientos={};
+  if(!d.movimientos[mesActual]) d.movimientos[mesActual]=[];
+  d.movimientos[mesActual].push({id:Date.now(),tipo:tabActual,desc,val,cat});
+  await guardarDatos(d);
+  document.getElementById('inp-desc').value='';
+  document.getElementById('inp-val').value='';
+  notif(tabActual==='ing'?'Ingreso registrado':'Gasto registrado');
+  await actualizarTodo();
+}
+async function eliminarMov(id){
+  const d=await getDatos();
+  if(!d.movimientos?.[mesActual]) return;
+  d.movimientos[mesActual]=d.movimientos[mesActual].filter(m=>m.id!==id);
+  await guardarDatos(d); await actualizarTodo();
+}
+
+async function actualizarTodo(){
+  const d=await getDatos();
+  const movs=d.movimientos?.[mesActual]||[];
+  const ing=movs.filter(m=>m.tipo==='ing').reduce((a,b)=>a+b.val,0);
+  const gas=movs.filter(m=>m.tipo==='gas').reduce((a,b)=>a+b.val,0);
+  const aho=ing-gas, tasa=ing>0?Math.round((aho/ing)*100):0;
+  const pctG=ing>0?Math.round((gas/ing)*100):0;
+  document.getElementById('m-ing').textContent=fmt(ing);
+  document.getElementById('m-gas').textContent=fmt(gas);
+  document.getElementById('m-aho').textContent=fmt(aho);
+  document.getElementById('m-tasa').textContent=tasa+'%';
+  document.getElementById('m-ing-sub').textContent=ing>0?'Total ingresado este mes':'Registra tu salario';
+  document.getElementById('m-gas-sub').textContent=pctG+'% del ingreso total';
+  document.getElementById('m-gas-sub').className='sub '+(pctG>80?'neg':'');
+  document.getElementById('m-aho-sub').textContent=aho>=0?'Superavit • Meta: 20%':'Deficit este mes';
+  document.getElementById('m-aho-sub').className='sub '+(aho>=0?'pos':'neg');
+  document.getElementById('m-tasa-sub').textContent=tasa>=20?'Excelente':tasa>=10?'Buen nivel':tasa>0?'Nivel bajo':'Sin datos aun';
+  document.getElementById('m-tasa-sub').className='sub '+(tasa>=10?'pos':tasa>0?'neg':'');
+  document.getElementById('r1').textContent=ing>0?fmt(ing*.5):'—';
+  document.getElementById('r2').textContent=ing>0?fmt(ing*.3):'—';
+  document.getElementById('r3').textContent=ing>0?fmt(ing*.2):'—';
+  // Actualizar frascos con ingreso real si hay
+  if(ing>0) {
+    document.getElementById('frasco-ingreso-inp').value=ing;
+    calcularFrascos(ing);
+  }
+  renderLista(movs); renderPie(movs); renderLine(d); renderCatBarras(movs,d.presupuestos||{});
+}
+
+function renderLista(movs){
+  const el=document.getElementById('lista-mov');
+  if(!movs.length){el.innerHTML='<p style="text-align:center;color:var(--texto3);font-size:12px;padding:1rem 0;">Sin movimientos este mes</p>';return;}
+  el.innerHTML=[...movs].reverse().map(m=>
+    `<div class="mov-item">
+      <span style="color:${m.tipo==='ing'?'#1D9E75':'#993C1D'};">${m.tipo==='ing'?'↓':'↑'}</span>
+      <span class="mov-desc">${m.desc}</span>
+      <span class="mov-val" style="color:${m.tipo==='ing'?'var(--verde-oscuro)':'var(--rojo)'}">${m.tipo==='ing'?'+':'-'}${fmt(m.val)}</span>
+      <button class="btn-del" onclick="eliminarMov(${m.id})">x</button>
+    </div>`
+  ).join('');
+}
+
+const CC={vivienda:'#1D9E75',alimentacion:'#378ADD',transporte:'#BA7517',salud:'#D4537E',educacion:'#7F77DD',entretenimiento:'#D85A30',ahorro:'#639922',otro:'#888780'};
+const CN={vivienda:'Vivienda',alimentacion:'Alimentacion',transporte:'Transporte',salud:'Salud',educacion:'Educacion',entretenimiento:'Entretenimiento',ahorro:'Ahorro',otro:'Otro'};
+const CE={vivienda:'🏠',alimentacion:'🍽',transporte:'🚌',salud:'❤️',educacion:'📚',entretenimiento:'🎮',ahorro:'💰',otro:'📦'};
+
+function renderPie(movs){
+  const datos={};
+  movs.filter(m=>m.tipo==='gas').forEach(m=>{datos[m.cat]=(datos[m.cat]||0)+m.val;});
+  const keys=Object.keys(datos),vals=keys.map(k=>datos[k]);
+  const total=vals.reduce((a,b)=>a+b,0),cols=keys.map(k=>CC[k]||'#888');
+  if(pieChart){pieChart.destroy();pieChart=null;}
+  const ctx=document.getElementById('pieChart').getContext('2d');
+  if(!keys.length){ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);document.getElementById('pie-legend').innerHTML='<span style="font-size:12px;color:var(--texto3);">Agrega gastos para ver la distribucion</span>';return;}
+  pieChart=new Chart(ctx,{type:'doughnut',data:{labels:keys.map(k=>CN[k]||k),datasets:[{data:vals,backgroundColor:cols,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+CN[keys[c.dataIndex]]+': '+fmt(c.parsed)}}},cutout:'62%'}});
+  document.getElementById('pie-legend').innerHTML=keys.map((k,i)=>`<div class="pie-ley-item"><div class="pie-ley-color" style="background:${cols[i]};"></div>${CN[k]} ${total>0?Math.round(vals[i]/total*100):0}%</div>`).join('');
+}
+
+function renderLine(d){
+  const hist=[],labels=[];
+  for(let i=5;i>=0;i--){
+    const mes=(mesActual-i+12)%12; labels.push(MESES_C[mes]);
+    const movs=d.movimientos?.[mes]||[];
+    hist.push(Math.round(movs.filter(m=>m.tipo==='ing').reduce((a,b)=>a+b.val,0)-movs.filter(m=>m.tipo==='gas').reduce((a,b)=>a+b.val,0)));
+  }
+  if(lineChart){lineChart.destroy();lineChart=null;}
+  lineChart=new Chart(document.getElementById('lineChart').getContext('2d'),{type:'line',data:{labels,datasets:[{label:'Ahorro',data:hist,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',tension:.4,fill:true,pointBackgroundColor:'#1D9E75',pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmt(c.parsed.y)}}},scales:{y:{ticks:{callback:v=>fmt(v),font:{size:10},color:'#888780'},grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false},ticks:{font:{size:10},color:'#888780'}}}}});
+}
+
+function renderCatBarras(movs,pres){
+  const datos={};
+  movs.filter(m=>m.tipo==='gas').forEach(m=>{datos[m.cat]=(datos[m.cat]||0)+m.val;});
+  const keys=Object.keys(datos).sort((a,b)=>datos[b]-datos[a]);
+  const total=Object.values(datos).reduce((a,b)=>a+b,0);
+  const el=document.getElementById('cat-barras');
+  if(!keys.length){el.innerHTML='<p style="font-size:12px;color:var(--texto3);text-align:center;padding:1rem 0;">Sin gastos registrados este mes</p>';return;}
+  el.innerHTML=keys.map(k=>{
+    const v=datos[k],pct=total>0?Math.round(v/total*100):0,lim=pres[k],sobre=lim&&v>lim,col=sobre?'#D85A30':CC[k]||'#888';
+    return `<div class="cat-row"><div class="cat-ico" style="background:${col}22;">${CE[k]||'📦'}</div><div class="cat-info"><div style="display:flex;justify-content:space-between;"><span class="cat-nom">${CN[k]}</span>${sobre?'<span style="font-size:10px;color:var(--rojo);font-weight:600;">Limite superado</span>':''}</div><div class="barra-wrap"><div class="barra" style="width:${pct}%;background:${col};"></div></div></div><span class="cat-monto">${fmt(v)}</span></div>`;
+  }).join('');
+}
+
+function renderPresCampos(d){
+  const p=d?.presupuestos||{};
+  const cats=['vivienda','alimentacion','transporte','salud','educacion','entretenimiento','ahorro','otro'];
+  document.getElementById('pres-campos').innerHTML=cats.map(k=>
+    `<div class="campo"><label>${CE[k]} ${CN[k]}</label><input type="number" id="pres-${k}" placeholder="Sin limite" value="${p[k]||''}" min="0" step="10000"/></div>`
+  ).join('');
+}
+async function guardarPresupuestos(){
+  const d=await getDatos();
+  const cats=['vivienda','alimentacion','transporte','salud','educacion','entretenimiento','ahorro','otro'];
+  d.presupuestos={};
+  cats.forEach(k=>{const v=parseFloat(document.getElementById('pres-'+k).value);if(v>0)d.presupuestos[k]=v;});
+  await guardarDatos(d); notif('Limites guardados'); await actualizarTodo();
+}
+
+function simRegla(v){
+  const n=Math.round(Number(v));
+  document.getElementById('sim-val').textContent=fmt(n);
+  document.getElementById('r1').textContent=fmt(n*.55);
+  document.getElementById('r2').textContent=fmt(n*.10);
+  document.getElementById('r3').textContent=fmt(n*.10);
+  document.getElementById('r4').textContent=fmt(n*.10);
+  document.getElementById('r5').textContent=fmt(n*.10);
+  document.getElementById('r6').textContent=fmt(n*.05);
+}
+
+// ══════════════════════════════════════════════════════
+//  SISTEMA DE LOS 6 FRASCOS
+// ══════════════════════════════════════════════════════
+const FRASCOS = [
+  {
+    id:'nec', clase:'frasco-nec', ico:'🏠', pct:55, codigo:'NEC',
+    titulo:'Necesidades Basicas', subtitulo:'Para vivir con dignidad',
+    tags:['Vivienda','Comida','Transporte','Servicios','Pagos obligatorios'],
+    regla:'<strong>Regla:</strong> Si superas el 55% en necesidades, necesitas reducir gastos fijos o aumentar ingresos. Este frasco financia tu vida, no tu estilo de vida.'
+  },
+  {
+    id:'ffa', clase:'frasco-ffa', ico:'💎', pct:10, codigo:'FFA',
+    titulo:'Libertad Financiera', subtitulo:'El frasco mas importante',
+    tags:['Inversiones','Activos','Ingresos pasivos','ETFs','CDTs'],
+    regla:'<strong>Regla de oro:</strong> NUNCA gastes este dinero. Solo inviertelo. Este frasco es el que te hara libre financieramente.'
+  },
+  {
+    id:'edu', clase:'frasco-edu', ico:'📚', pct:10, codigo:'EDU',
+    titulo:'Educacion Personal', subtitulo:'Invierte en quien eres',
+    tags:['Cursos','Libros','Mentorias','Eventos','Capacitacion'],
+    regla:'"<strong>La persona en la que te conviertes vale mas que el dinero que ganas.</strong>" — T. Harv Eker'
+  },
+  {
+    id:'play', clase:'frasco-play', ico:'🎉', pct:10, codigo:'PLAY',
+    titulo:'Diversion y Gozo', subtitulo:'Disfruta tu dinero hoy',
+    tags:['Viajes','Restaurantes','Experiencias','Regalos','Ocio'],
+    regla:'<strong>Regla:</strong> Gastalo todo cada mes. No acumules. Este frasco elimina la mentalidad de escasez y te permite disfrutar el presente.'
+  },
+  {
+    id:'ltss', clase:'frasco-ltss', ico:'🎯', pct:10, codigo:'LTSS',
+    titulo:'Ahorro a Largo Plazo', subtitulo:'Para metas grandes',
+    tags:['Carro','Cuota inicial','Vacaciones','Tecnologia','Emergencias'],
+    regla:'<strong>Regla:</strong> Ahorra hasta alcanzar tu meta, luego gasta. Este frasco financia tus grandes suenos sin endeudarte.'
+  },
+  {
+    id:'give', clase:'frasco-give', ico:'🤝', pct:5, codigo:'GIVE',
+    titulo:'Donaciones', subtitulo:'Mentalidad de abundancia',
+    tags:['Familia','Iglesia','Fundaciones','Ayuda social','Caridad'],
+    regla:'<strong>Regla:</strong> Dar activa la mentalidad de abundancia. Quienes dan mas, reciben mas. Es una ley universal del dinero.'
+  }
+];
+
+function renderFrascosIniciales(){
+  const grid=document.getElementById('frascos-grid');
+  grid.innerHTML=FRASCOS.map(f=>`
+    <div class="frasco-card ${f.clase}" id="card-${f.id}">
+      <div class="frasco-header">
+        <div class="frasco-ico-wrap">
+          <div class="frasco-ico">${f.ico}</div>
+          <div>
+            <div class="frasco-titulo">${f.titulo}</div>
+            <div class="frasco-subtitulo">${f.subtitulo}</div>
+          </div>
+        </div>
+        <span class="frasco-pct-badge">${f.pct}%</span>
+      </div>
+      <div class="frasco-monto" id="monto-${f.id}">—</div>
+      <div class="frasco-monto-sub">al mes • <strong>${f.codigo}</strong></div>
+      <div class="frasco-barra-wrap"><div class="frasco-barra" id="barra-${f.id}" style="width:0%"></div></div>
+      <div class="frasco-tags">${f.tags.map(t=>`<span class="frasco-tag">${t}</span>`).join('')}</div>
+      <div class="frasco-regla">${f.regla}</div>
+    </div>
+  `).join('');
+}
+
+function calcularFrascos(ingreso){
+  const v=Math.round(Number(ingreso)||0);
+  if(v<=0){
+    FRASCOS.forEach(f=>{
+      const m=document.getElementById('monto-'+f.id);
+      const b=document.getElementById('barra-'+f.id);
+      if(m) m.textContent='—';
+      if(b) b.style.width='0%';
+    });
+    document.getElementById('frasco-dist-bar').style.display='none';
+    return;
+  }
+  FRASCOS.forEach(f=>{
+    const monto=Math.round(v*(f.pct/100));
+    const m=document.getElementById('monto-'+f.id);
+    const b=document.getElementById('barra-'+f.id);
+    if(m) m.textContent=fmt(monto);
+    if(b) setTimeout(()=>b.style.width='100%',100);
+  });
+  // Barra de distribucion
+  const barColors={nec:'#1D9E75',ffa:'#185FA5',edu:'#7F77DD',play:'#D85A30',ltss:'#BA7517',give:'#D4537E'};
+  document.getElementById('frasco-dist-bar').style.display='block';
+  document.getElementById('frasco-dist').innerHTML=FRASCOS.map(f=>
+    `<div class="frasco-dist-seg" style="width:${f.pct}%;background:${barColors[f.id]};"></div>`
+  ).join('');
+  document.getElementById('frasco-dist-legend').innerHTML=FRASCOS.map(f=>
+    `<div class="frasco-dist-item"><div class="frasco-dist-dot" style="background:${barColors[f.id]};"></div><span>${f.pct}% ${f.codigo} — ${fmt(Math.round(v*(f.pct/100)))}</span></div>`
+  ).join('');
+}
+
+// ── HITOS Y TIPS ───────────────────────────────────────
+const NIVELES=[
+  [{estado:'done',titulo:'Presupuesto mensual',desc:'Registra todos tus ingresos y gastos.'},
+   {estado:'next',titulo:'Fondo de emergencia',desc:'Ahorra 3 meses de gastos. Comienza con $500.000 COP.'},
+   {estado:'pend',titulo:'Eliminar deudas de consumo',desc:'Paga primero tarjetas de credito y creditos de libre inversion.'},
+   {estado:'pend',titulo:'Implementar los 6 frascos',desc:'Divide tu ingreso mensual segun el metodo Harv Eker.'}],
+  [{estado:'done',titulo:'Invertir en CDT',desc:'Los CDTs en bancos colombianos ofrecen 9-13% E.A.'},
+   {estado:'done',titulo:'Fondos de inversion colectiva',desc:'Fiduciarias como Bancolombia o Davivienda desde $50.000 COP.'},
+   {estado:'next',titulo:'Acciones BVC',desc:'Ecopetrol, Grupo Sura o ETFs globales.'},
+   {estado:'pend',titulo:'Patrimonio neto positivo',desc:'Calcula tu patrimonio neto cada trimestre.'}],
+  [{estado:'done',titulo:'Multiples fuentes de ingreso',desc:'Apunta a tener minimo 3 fuentes de ingreso.'},
+   {estado:'next',titulo:'Finca raiz estrategica',desc:'Colombia tiene buenas oportunidades en Medellin y Bogota.'},
+   {estado:'next',titulo:'Pension voluntaria y AFC',desc:'Aportes voluntarios reducen tu retencion en la fuente.'},
+   {estado:'pend',titulo:'Independencia financiera',desc:'Cuando tus ingresos pasivos cubren todos tus gastos.'}]
+];
+async function setNivel(idx,btn){
+  const d=await getDatos(); d.nivelActivo=idx; await guardarDatos(d);
+  document.querySelectorAll('.nivel-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderHitos(idx);
+}
+function renderHitos(idx){
+  document.getElementById('hitos-wrap').innerHTML=NIVELES[idx].map(h=>
+    `<div class="hito"><div class="hito-dot ${h.estado==='done'?'h-done':h.estado==='next'?'h-next':'h-pend'}">${h.estado==='done'?'✓':h.estado==='next'?'→':'○'}</div><div class="hito-info"><h4>${h.titulo}</h4><p>${h.desc}</p></div></div>`
+  ).join('');
+  document.querySelectorAll('.nivel-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+}
+function renderTips(){
+  const tips=[
+    {t:'DIAN y declaracion de renta',c:'Si ganas mas de $59M al ano o tienes patrimonio superior a $190M debes declarar.'},
+    {t:'Cuentas AFC — beneficio tributario',c:'Los aportes AFC hasta el 30% del ingreso no pagan retencion en la fuente.'},
+    {t:'Evita el gota a gota',c:'Las tasas de prestamistas informales pueden superar el 200% E.A.'},
+    {t:'Fintech colombianas',c:'Nequi, Daviplata, Lulo Bank y Nubank ofrecen rendimientos de 10-14% E.A.'},
+    {t:'Diversifica en dolares',c:'Parte de tus ahorros en dolares o ETFs globales te protege de la devaluacion.'},
+    {t:'Seguro de vida',c:'Un seguro de vida desde $30.000 al mes protege a tu familia.'}
+  ];
+  document.getElementById('tips-wrap').innerHTML=tips.map(t=>`<div class="tip"><div class="tip-tit">💡 ${t.t}</div><p>${t.c}</p></div>`).join('');
+}
+
+// ── INICIO ─────────────────────────────────────────────
+(async()=>{
+  try{
+    await cargarFirebase(FIREBASE_CONFIG);
+    irA('pantalla-login');
+  }catch(e){
+    alert('Error conectando Firebase: '+e.message);
+  }
+})();
+</script>
+</body>
+</html>

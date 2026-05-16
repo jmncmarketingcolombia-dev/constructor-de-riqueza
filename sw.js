@@ -1,11 +1,13 @@
-const CACHE = 'constructor-riqueza-v1';
+const CACHE = 'constructor-riqueza-v2';
+const BASE = '/constructor-de-riqueza';
 const ARCHIVOS = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon-192.png',
+  BASE + '/icon-512.png'
 ];
 
-// Instalar y cachear archivos
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(ARCHIVOS))
@@ -13,7 +15,6 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activar y limpiar caches viejos
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -23,31 +24,26 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Responder con cache o red
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
 
-// Notificaciones push
 self.addEventListener('push', e => {
   const data = e.data ? e.data.json() : {};
   e.waitUntil(
     self.registration.showNotification(data.title || 'Constructor de Riqueza', {
       body: data.body || 'Tienes una nueva notificacion',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: BASE + '/icon-192.png',
+      badge: BASE + '/icon-192.png',
       vibrate: [200, 100, 200],
-      data: data.url || '/'
+      data: data.url || BASE + '/'
     })
   );
 });
 
-// Click en notificacion abre la app
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(
-    clients.openWindow(e.notification.data || '/')
-  );
+  e.waitUntil(clients.openWindow(e.notification.data || BASE + '/'));
 });
